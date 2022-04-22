@@ -56,13 +56,13 @@ class myObj
         r = (float)rand.NextDouble();
         g = (float)rand.NextDouble();
         b = (float)rand.NextDouble();
-        a = (float)rand.NextDouble()/10;
+        a = (float)rand.NextDouble();
     }
 
     public void Draw(Triangle t)
     {
         t.SetColor(r, g, b, a);
-        t.Draw(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
+        t.Draw(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, false);
     }
 }
 
@@ -95,7 +95,10 @@ class Program
         var window = myOGL.CreateWindow(0, 0, "my Window", trueFullScreen: false);
 
         Triangle t = new Triangle();
-        t.SetColor(1, 1, 1, 1);
+        t.SetColor(1.0f, 0.5f, 0.5f, 1);
+
+        Line l = new Line();
+        l.SetColor(0, 1, 0, 1);
         long n = 0;
 
         var list = new System.Collections.Generic.List<myObj>();
@@ -104,13 +107,16 @@ class Program
         {
             var obj = new myObj();
             obj.changeColor(rand);
-
             list.Add(obj);
         }
 
-        glEnable(GL_BLEND); //Enable blending.
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); //Set blending function.
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+
+        glEnable(GL_BLEND);                                 // Enable blending
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  // Set blending function
+
+
+        //Glfw.SwapInterval(11);
+
 
         while (!Glfw.WindowShouldClose(window))
         {
@@ -121,11 +127,12 @@ class Program
             Glfw.PollEvents();
 
             // Clear the framebuffer to defined background color
+            glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
             if (n++ % 500 == 0)
             {
-                /*
+/*
                 foreach (var item in list)
                     item.changeColor(rand);*/
             }
@@ -135,6 +142,14 @@ class Program
                 item.Draw(t);
                 item.Move();
             }
+
+            t.SetColor(1.0f, 0.5f, 0.5f, 0.5f);
+            t.Draw(0.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f, true);
+            t.Draw(0.0f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f, true);
+
+            l.SetColor(0, 1, 0, 1);
+            l.Draw(-1, -1, +1, +1);
+            l.Draw(-1, +1, +1, -1);
         }
 
         Glfw.Terminate();
