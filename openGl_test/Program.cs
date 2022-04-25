@@ -12,12 +12,10 @@ class pt
     public float x, y;
     private float dx, dy;
 
-    public pt()
+    public pt(Random r)
     {
         x = 0;
         y = 0;
-
-        var r = new Random((int)DateTime.Now.Ticks);
 
         dx = (float)((r.NextDouble() * 2) - 1.0f) / 100;
         dy = (float)((r.NextDouble() * 2) - 1.0f) / 100;
@@ -28,10 +26,12 @@ class pt
         x += dx;
         y += dy;
 
-        if (x <= -1 || x >= 1)
+        float max = 0.9f;
+
+        if (x <= -max || x >= max)
             dx *= -1;
 
-        if (y <= -1 || y >= 1)
+        if (y <= -max || y >= max)
             dy *= -1;
     }
 };
@@ -40,9 +40,14 @@ class myObj
 {
     float r = 0, g = 0, b = 0, a = 0;
 
-    pt p1 = new pt();
-    pt p2 = new pt();
-    pt p3 = new pt();
+    pt p1 = null, p2 = null, p3 = null;
+
+    public myObj(Random r)
+    {
+        p1 = new pt(r);
+        p2 = new pt(r);
+        p3 = new pt(r);
+    }
 
     public void Move()
     {
@@ -56,7 +61,7 @@ class myObj
         r = (float)rand.NextDouble();
         g = (float)rand.NextDouble();
         b = (float)rand.NextDouble();
-        a = (float)rand.NextDouble();
+        a = (float)rand.NextDouble()/20;
     }
 
     public void Draw(Triangle t)
@@ -85,6 +90,8 @@ class Program
     static void Main(string[] args)
     {
         rand = new Random();
+        long n = 0;
+        int Width = 0, Height = 0;
 
         // Set context creation hints
         myOGL.PrepareContext();
@@ -92,20 +99,25 @@ class Program
         // Create a window and shader program
         //var window = myOGL.CreateWindow(1920, 1200, "my Window", trueFullScreen: false);
 
-        var window = myOGL.CreateWindow(0, 0, "my Window", trueFullScreen: false);
+        var window = myOGL.CreateWindow(ref Width, ref Height, "my Window", trueFullScreen: false);
 
-        Triangle t = new Triangle();
+        var t = new Triangle();
         t.SetColor(1.0f, 0.5f, 0.5f, 1);
 
-        Line l = new Line();
+        var l = new Line();
         l.SetColor(0, 1, 0, 1);
-        long n = 0;
+
+        var r = new myRectangle(Width, Height);
+        r.SetColor(1, 1, 0, 1);
+
+        var e = new myEllipse(Width, Height);
+        e.SetColor(1, 1, 1, 1);
 
         var list = new System.Collections.Generic.List<myObj>();
 
-        for (int i = 0; i < 111; i++)
+        for (int i = 0; i < 1111; i++)
         {
-            var obj = new myObj();
+            var obj = new myObj(rand);
             obj.changeColor(rand);
             list.Add(obj);
         }
@@ -114,8 +126,22 @@ class Program
         glEnable(GL_BLEND);                                 // Enable blending
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  // Set blending function
 
+        if (false)
+        {
+            // https://community.khronos.org/t/how-to-turn-off-antialiasing/38308
+            glDisable(GL_DITHER);
+            //glDisable(GL_POINT_SMOOTH);
+            glDisable(GL_LINE_SMOOTH);
+            glDisable(GL_POLYGON_SMOOTH);
+            //glHint(GL_POINT_SMOOTH, GL_DONT_CARE);
+            glHint(GL_LINE_SMOOTH, GL_DONT_CARE);
+            glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
+            var GL_MULTISAMPLE_ARB = 0x809D;
+            glDisable(GL_MULTISAMPLE_ARB);
+        }
 
-        //Glfw.SwapInterval(11);
+
+        //Glfw.SwapInterval(111);
 
 
         while (!Glfw.WindowShouldClose(window))
@@ -143,13 +169,22 @@ class Program
                 item.Move();
             }
 
-            t.SetColor(1.0f, 0.5f, 0.5f, 0.5f);
-            t.Draw(0.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f, true);
-            t.Draw(0.0f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f, true);
+            r.SetColor(1, 1, 0, 0.99f);
+            r.Draw(Width/2 + rand.Next(333), Height/2 + rand.Next(333), 222, 222, false);
+
+            e.SetColor(1, 1, 1, 1);
+            e.Draw(Width/2, Height/2, 1);
+
+            continue;
 
             l.SetColor(0, 1, 0, 1);
             l.Draw(-1, -1, +1, +1);
             l.Draw(-1, +1, +1, -1);
+            l.Draw(-0.5f, 1, -0.5f, -1);
+
+            t.SetColor(1.0f, 0.5f, 0.5f, 0.5f);
+            //t.Draw(0.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f, true);
+            t.Draw(0.0f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f, false);
         }
 
         Glfw.Terminate();

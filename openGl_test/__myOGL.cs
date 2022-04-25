@@ -7,44 +7,6 @@ class myOGL
 {
     // -------------------------------------------------------------------------------------------------------------------
 
-    [DllImport("shcore.dll")]
-    private static extern int SetProcessDpiAwareness(ProcessDPIAwareness value);
-
-    private enum ProcessDPIAwareness
-    {
-        ProcessDPIUnaware = 0,
-        ProcessSystemDPIAware = 1,
-        ProcessPerMonitorDPIAware = 2
-    }
-
-    private static void SetDpiAwareness()
-    {
-        try
-        {
-            int major = Environment.OSVersion.Version.Major;
-            int minor = Environment.OSVersion.Version.Minor;
-
-            if (major >= 6)
-            {
-                if (minor > 1)
-                {
-                    SetProcessDpiAwareness(ProcessDPIAwareness.ProcessPerMonitorDPIAware);
-                }
-                else
-                {
-                }
-            }
-        }
-        catch (EntryPointNotFoundException)
-        {
-            // This exception occurs if OS does not implement this API, just ignore it
-        }
-
-        return;
-    }
-
-    // -------------------------------------------------------------------------------------------------------------------
-
     public static void PrepareContext()
     {
         // Set some common hints for the OpenGL profile creation
@@ -54,6 +16,10 @@ class myOGL
         Glfw.WindowHint(Hint.OpenglProfile, Profile.Core);
         Glfw.WindowHint(Hint.Doublebuffer, true);
         Glfw.WindowHint(Hint.Decorated, false);
+
+        Glfw.WindowHint(Hint.Samples, 0);
+        //Glfw.WindowHint(Hint.ScaleToMonitor, true);
+
         //Glfw.WindowHint(Hint.Floating, false);
     }
 
@@ -65,7 +31,7 @@ class myOGL
     /// <param name="width">The width of the client area, in pixels.</param>
     /// <param name="height">The height of the client area, in pixels.</param>
     /// <returns>A handle to the created window.</returns>
-    public static Window CreateWindow(int width, int height, string Title, bool trueFullScreen = false)
+    public static Window CreateWindow(ref int width, ref int height, string Title, bool trueFullScreen = false)
     {
         // Create window, make the OpenGL context current on the thread, and import graphics functions
 
@@ -74,9 +40,9 @@ class myOGL
         if (trueFullScreen)
         {
             // Set monitor to real full screen mode (which takes a long time somehow)
-            width  = Glfw.PrimaryMonitor.WorkArea.Width;
-            height = Glfw.PrimaryMonitor.WorkArea.Height;
-
+            var mode = Glfw.GetVideoMode(Glfw.PrimaryMonitor);
+            width  = mode.Width;
+            height = mode.Height;
             window = Glfw.CreateWindow(width, height, Title, Glfw.PrimaryMonitor, Window.None);
         }
         else
@@ -85,7 +51,9 @@ class myOGL
             {
                 // Create window that fully covers the entire monitor at its current resolution
                 var mode = Glfw.GetVideoMode(Glfw.PrimaryMonitor);
-                window = Glfw.CreateWindow(mode.Width, mode.Height, Title, Monitor.None, Window.None);
+                width  = mode.Width;
+                height = mode.Height;
+                window = Glfw.CreateWindow(width, height, Title, Monitor.None, Window.None);
             }
             else
             {
@@ -147,12 +115,4 @@ class myOGL
     }
 
     // -------------------------------------------------------------------------------------------------------------------
-/*
-    var vertex = myOGL.CreateShader(GL_VERTEX_SHADER, @"
-                                                    layout (location = 0) in vec3 pos;
-                                                    void main()
-                                                    {
-                                                        gl_Position = vec4(pos.x, pos.y, pos.z, 1.0);
-                                                    }");
-*/
 }
