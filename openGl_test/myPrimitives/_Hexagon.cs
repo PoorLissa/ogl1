@@ -3,7 +3,7 @@ using static OpenGL.GL;
 using System;
 
 
-public class myEllipse
+public class myHexagon
 {
     private static uint vao = 0, vbo = 0, ebo = 0, program = 0;
     private static uint[] indicesOutline = null;
@@ -11,8 +11,10 @@ public class myEllipse
     private static float[] vertices = null;
     private static int locationColor = 0;
     private static int Width = 0, Height = 0;
+    private static float sqrt3_div2 = 0;
+    private static float h_div_w = 0;
 
-    public myEllipse(int width, int height)
+    public myHexagon(int width, int height)
     {
         static unsafe void __glGenBuffers()
         {
@@ -27,7 +29,12 @@ public class myEllipse
             Width = width;
             Height = height;
 
+            sqrt3_div2 = (float)(Math.Sqrt(3.0) / 2.0);
+            h_div_w = (float)height / (float)width;
+
             vertices = new float[18];
+            for(int i = 0; i < 18; i++)
+                vertices[i] = 0.0f;
 
             indicesOutline = new uint[]
             {
@@ -39,10 +46,13 @@ public class myEllipse
                 5, 0
             };
 
+            // 4 triangles
             indicesFill = new uint[]
             {
-                0, 1, 3,   // first triangle
-                1, 2, 3    // second triangle
+                0, 1, 3,
+                1, 2, 3,
+                0, 4, 3,
+                0, 5, 4
             };
 
             vao = glGenVertexArray();
@@ -54,64 +64,57 @@ public class myEllipse
             glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
             // Ebo is used with glDrawElements (with the array of indices).
-            // glDrawArrays does not ned this
+            // glDrawArrays does not need this
             __glGenBuffers();
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 
-            // Define a simple triangle
             CreateVertices(false);
 
             locationColor = glGetUniformLocation(program, "myColor");
         }
     }
 
-    public void Draw(int x, int y, int r)
+    public void Draw(int x, int y, int r, bool doFill = false)
     {
         static unsafe void __draw(bool doFill)
         {
             if (doFill)
             {
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
+                glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, NULL);
             }
             else
             {
-                //glDrawArrays(GL_TRIANGLES, 0, 3);
                 glDrawElements(GL_LINES, 18, GL_UNSIGNED_INT, NULL);
             }
         }
 
         // Recalc int coordinates into floats
-        float fx = 2.0f * x / (Width + 1) - 1.0f;
+        float fx = 2.0f * x / (Width) - 1.0f;
         float fy = 1.0f - 2.0f * y / Height;
 
-        float fr = 0.5f;
-        float fry = (fr * Height) / Height;
-        float frx = (fr * Height) / Width;
-        //float half = (r * Height) / Width;
+        float fr = 2.0f * r / Height;           // Radius
+        float frx = fr * h_div_w;               // Radius adjusted for x-coordinate
 
-        vertices[0] = fx-frx;
-        vertices[1] = fy;
-        vertices[2] = 0;
-        vertices[3] = fx-frx/2;
-        vertices[4] = fy+fry;
-        vertices[5] = 0;
-        vertices[6] = fx+frx/2;
-        vertices[7] = fy+fry;
-        vertices[8] = 0;
-        vertices[9] = fx+frx;
+        float frx_sqrt = fr * sqrt3_div2;
+        float frx_half = frx * 0.5f;
+
+        vertices[00] = fx - frx;
+        vertices[01] = fy;
+        vertices[03] = fx - frx_half;
+        vertices[04] = fy + frx_sqrt;
+        vertices[06] = fx + frx_half;
+        vertices[07] = fy + frx_sqrt;
+        vertices[09] = fx + frx;
         vertices[10] = fy;
-        vertices[11] = 0;
-        vertices[12] = fx+frx/2;
-        vertices[13] = fy-fry;
-        vertices[14] = 0;
-        vertices[15] = fx-frx/2;
-        vertices[16] = fy-fry;
-        vertices[17] = 0;
+        vertices[12] = fx + frx_half;
+        vertices[13] = fy - frx_sqrt;
+        vertices[15] = fx - frx_half;
+        vertices[16] = fy - frx_sqrt;
 
-        CreateVertices(false);
+        CreateVertices(doFill);
 
-        __draw(false);
+        __draw(doFill);
     }
 
     public void SetColor(float r, float g, float b, float a)
@@ -121,7 +124,20 @@ public class myEllipse
 
     private static void CreateProgram()
     {
+#if true
         var vertex = myOGL.CreateShaderEx(GL_VERTEX_SHADER, "layout (location = 0) in vec3 pos;", main: "gl_Position = vec4(pos, 1.0);");
+#else
+        var vertex = myOGL.CreateShaderEx(GL_VERTEX_SHADER, "layout (location = 0) in vec3 pos;",
+            main: @"
+                    float a = 0.85;
+
+                    float X = pos.x;
+                    float Y = pos.y;
+
+                    gl_Position = vec4(X * cos(a) - Y * sin(a), Y * cos(a) + X * sin(a), pos.z, 1.0);"
+        );
+#endif
+
         var fragment = myOGL.CreateShaderEx(GL_FRAGMENT_SHADER, "out vec4 result; uniform vec4 myColor;", main: "result = myColor;");
 
         program = glCreateProgram();

@@ -8,11 +8,15 @@ class Line
     private static uint vao = 0, vbo = 0, program = 0;
     private static float[] vertices = null;
     private static int locationColor = 0;
+    private static int Width = 0, Height = 0;
 
-    public Line()
+    public Line(int width, int height)
     {
         if (vertices == null)
         {
+            Width = width;
+            Height = height;
+
             vertices = new float[4];
 
             vao = glGenVertexArray();
@@ -23,11 +27,34 @@ class Line
             glBindVertexArray(vao);
             glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
+            CreateVertices();
+
             locationColor = glGetUniformLocation(program, "myColor");
         }
     }
 
     public void Draw(float x1, float y1, float x2, float y2, float lineWidth = 1.0f)
+    {
+        // Recalc int coordinates into floats
+        float fx = 2.0f * x1 / (Width) - 1.0f;
+        float fy = 1.0f - 2.0f * y1 / Height;
+
+        vertices[0] = fx;
+        vertices[1] = fy;
+
+        fx = 2.0f * x2 / (Width) - 1.0f;
+        fy = 1.0f - 2.0f * y2 / Height;
+        vertices[2] = fx;
+        vertices[3] = fy;
+
+        CreateVertices();
+
+        glLineWidth(lineWidth);
+
+        glDrawArrays(GL_LINES, 0, 2);
+    }
+
+    public void Draw2(float x1, float y1, float x2, float y2, float lineWidth = 1.0f)
     {
         vertices[0] = x1;
         vertices[1] = y1;

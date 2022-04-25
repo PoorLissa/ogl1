@@ -54,6 +54,8 @@ public class myRectangle
             __glGenBuffers();
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 
+            CreateVertices(false);
+
             locationColor = glGetUniformLocation(program, "myColor");
         }
     }

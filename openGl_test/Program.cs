@@ -89,6 +89,7 @@ class Program
 
     static void Main(string[] args)
     {
+        Window window;
         rand = new Random();
         long n = 0;
         int Width = 0, Height = 0;
@@ -97,21 +98,24 @@ class Program
         myOGL.PrepareContext();
 
         // Create a window and shader program
-        //var window = myOGL.CreateWindow(1920, 1200, "my Window", trueFullScreen: false);
+        if (true)
+        {
+            Width = 1920;
+            Height = 1200;
+        }
 
-        var window = myOGL.CreateWindow(ref Width, ref Height, "my Window", trueFullScreen: false);
+        window = myOGL.CreateWindow(ref Width, ref Height, "my Window", trueFullScreen: false);
 
         var t = new Triangle();
         t.SetColor(1.0f, 0.5f, 0.5f, 1);
 
-        var l = new Line();
+        var l = new Line(Width, Height);
         l.SetColor(0, 1, 0, 1);
 
         var r = new myRectangle(Width, Height);
         r.SetColor(1, 1, 0, 1);
 
-        var e = new myEllipse(Width, Height);
-        e.SetColor(1, 1, 1, 1);
+        var h = new myHexagon(Width, Height);
 
         var list = new System.Collections.Generic.List<myObj>();
 
@@ -169,22 +173,30 @@ class Program
                 item.Move();
             }
 
+
+            //continue;
+
+            // Rectangle
             r.SetColor(1, 1, 0, 0.99f);
-            r.Draw(Width/2 + rand.Next(333), Height/2 + rand.Next(333), 222, 222, false);
+            r.Draw(Width / 2 + rand.Next(333), Height / 2 + rand.Next(333), 222, 222, false);
 
-            e.SetColor(1, 1, 1, 1);
-            e.Draw(Width/2, Height/2, 1);
-
-            continue;
-
+            // Line
             l.SetColor(0, 1, 0, 1);
             l.Draw(-1, -1, +1, +1);
             l.Draw(-1, +1, +1, -1);
             l.Draw(-0.5f, 1, -0.5f, -1);
 
+            // Triangle
             t.SetColor(1.0f, 0.5f, 0.5f, 0.5f);
-            //t.Draw(0.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f, true);
+            t.Draw(0.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f, true);
             t.Draw(0.0f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f, false);
+
+            // Hexagon
+            h.SetColor(1, 1, 1, 0.50f);
+            h.Draw(Width / 2, Height / 2, 100, true);
+
+            h.SetColor(1, 0, 0, 0.85f);
+            h.Draw(Width / 2, Height / 2, 100, false);
         }
 
         Glfw.Terminate();

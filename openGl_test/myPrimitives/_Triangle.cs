@@ -23,6 +23,8 @@ public class Triangle
             glBindVertexArray(vao);
             glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
+            CreateVertices();
+
             locationColor = glGetUniformLocation(program, "myColor");
         }
     }
