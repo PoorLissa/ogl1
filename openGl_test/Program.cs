@@ -100,25 +100,27 @@ class Program
         myOGL.PrepareContext();
 
         // Create a window and shader program
-        if (true)
+        if (false)
         {
             Width = 1920;
-            //Width = 1200;
             Height = 1200;
         }
 
         window = myOGL.CreateWindow(ref Width, ref Height, "my Window", trueFullScreen: false);
 
-        var t = new Triangle();
-        t.SetColor(1.0f, 0.5f, 0.5f, 1);
+        // One time call to let primitives know the screen dimensions
+        myPrimitive.setScreenDimensions(Width, Height);
 
-        var l = new Line(Width, Height);
+        var t = new Triangle();
+
+        var l = new Line();
         l.SetColor(0, 1, 0, 1);
 
-        var r = new myRectangle(Width, Height);
-        r.SetColor(1, 1, 0, 1);
+        var r = new myRectangle();
+        r.SetColor(1, 1, 0, 0.33f);
 
-        var h = new myHexagon(Width, Height);
+        var h = new myHexagon();
+        h.SetColor(1, 0, 0, 0.33f);
 
         var list = new System.Collections.Generic.List<myObj>();
 
@@ -129,10 +131,10 @@ class Program
             list.Add(obj);
         }
 
-        glViewport(0, 0, Width, Height);
 
         glEnable(GL_BLEND);                                 // Enable blending
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  // Set blending function
+
 
         if (false)
         {
@@ -172,26 +174,21 @@ class Program
             }
 
             // Rectangle
-            r.SetColor(1, 1, 0, 0.99f);
             r.SetAngle(angle);
-            r.Draw(100, 100, 100, 100, false);
+            r.Draw(Width / 2 - 222, Height / 2 - 222, 444, 444, true);
 
             // Line
-            l.SetColor(0, 1, 0, 1);
             l.Draw(0, Height, Width, 0);
 
             // Triangle
-            t.SetColor(1.0f, 0.5f, 0.5f, 0.5f);
+            t.SetColor(0.0f, 0.9f, 0.9f, 0.75f);
             t.Draw(0.0f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f, false);
 
             // Hexagon
-            h.SetColor(1, 0, 0, 0.85f);
             h.SetAngle(angle);
-            h.Draw(Width / 2, Height / 2, 100, false);
+            h.Draw(Width / 2, Height / 2, 100, true);
 
-
-
-            angle += 0.005f;
+            angle += 0.0025f;
             continue;
 
             // Rectangle

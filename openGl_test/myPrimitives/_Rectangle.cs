@@ -3,17 +3,16 @@ using static OpenGL.GL;
 using System;
 
 
-public class myRectangle
+public class myRectangle : myPrimitive
 {
     private static uint vao = 0, vbo = 0, ebo = 0, program = 0;
     private static uint[] indicesOutline = null;
     private static uint[] indicesFill = null;
     private static float[] vertices = null;
-    private static int locationColor = 0, locationAngle = 0, locationCenter = 0;
-    private static int Width = 0, Height = 0;
-    private static float _r, _g, _b, _a, _angle;
+    private static int locationColor = 0, locationAngle = 0, locationCenter = 0, locationScrSize = 0;
+    private static float _angle;
 
-    public myRectangle(int width, int height)
+    public myRectangle()
     {
         static unsafe void __glGenBuffers()
         {
@@ -25,9 +24,6 @@ public class myRectangle
 
         if (vertices == null)
         {
-            Width = width;
-            Height = height;
-
             vertices = new float[12];
 
             indicesOutline = new uint[]
@@ -48,9 +44,10 @@ public class myRectangle
             vbo = glGenBuffer();
 
             CreateProgram();
-            locationColor  = glGetUniformLocation(program, "myColor");
-            locationAngle  = glGetUniformLocation(program, "myAngle");
-            locationCenter = glGetUniformLocation(program, "myCenter");
+            locationColor   = glGetUniformLocation(program, "myColor");
+            locationAngle   = glGetUniformLocation(program, "myAngle");
+            locationCenter  = glGetUniformLocation(program, "myCenter");
+            locationScrSize = glGetUniformLocation(program, "myScrSize");
 
             glBindVertexArray(vao);
             glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -124,23 +121,10 @@ public class myRectangle
         if (_angle != 0.0f)
         {
             glUniform2f(locationCenter, x + w/2, y + h/2);
+            updUniformScreenSize(locationScrSize, Width, Height);
         }
 
         __draw(doFill);
-    }
-
-    // Just remember the color value
-    public void SetColor(float r, float g, float b, float a)
-    {
-        _r = r;
-        _g = g;
-        _b = b;
-        _a = a;
-    }
-
-    private static void setColor(int location, float r, float g, float b, float a)
-    {
-        glUniform4f(location, r, g, b, a);
     }
 
     public void SetAngle(float angle)
@@ -158,7 +142,7 @@ public class myRectangle
 #if false
         var vertex = myOGL.CreateShaderEx(GL_VERTEX_SHADER, "layout (location = 0) in vec3 pos;", main: "gl_Position = vec4(pos, 1.0);");
 #else
-        var vertex = myOGL.CreateShaderEx(GL_VERTEX_SHADER, "layout (location = 0) in vec3 pos; uniform float myAngle; uniform vec2 myCenter;",
+        var vertex = myOGL.CreateShaderEx(GL_VERTEX_SHADER, "layout (location = 0) in vec3 pos; uniform float myAngle; uniform vec2 myCenter; uniform ivec2 myScrSize;",
             main: @"if (myAngle == 0)
                     {
                         gl_Position = vec4(pos, 1.0);
@@ -173,8 +157,8 @@ public class myRectangle
                         gl_Position.x += myCenter.x;
                         gl_Position.y += myCenter.y;
 
-                        gl_Position.x = 2.0f * gl_Position.x / (1920+1) - 1.0f;
-                        gl_Position.y = 1.0f - 2.0f * gl_Position.y / 1200;
+                        gl_Position.x = 2.0f * gl_Position.x / (myScrSize.x+1) - 1.0f;
+                        gl_Position.y = 1.0f - 2.0f * gl_Position.y / myScrSize.y;
                     }"
         );
 #endif

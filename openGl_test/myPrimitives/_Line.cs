@@ -3,20 +3,16 @@ using static OpenGL.GL;
 using System;
 
 
-class Line
+class Line : myPrimitive
 {
     private static uint vao = 0, vbo = 0, program = 0;
     private static float[] vertices = null;
     private static int locationColor = 0;
-    private static int Width = 0, Height = 0;
-    private static float _r, _g, _b, _a;
 
-    public Line(int width, int height)
+    public Line()
     {
         if (vertices == null)
         {
-            Width = width;
-            Height = height;
 
             vertices = new float[4];
 
@@ -53,20 +49,6 @@ class Line
         glLineWidth(lineWidth);
 
         glDrawArrays(GL_LINES, 0, 2);
-    }
-
-    // Just remember the color value
-    public void SetColor(float r, float g, float b, float a)
-    {
-        _r = r;
-        _g = g;
-        _b = b;
-        _a = a;
-    }
-
-    private static void setColor(int location, float r, float g, float b, float a)
-    {
-        glUniform4f(location, r, g, b, a);
     }
 
     private static void CreateProgram()
