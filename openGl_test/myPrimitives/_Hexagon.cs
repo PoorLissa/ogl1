@@ -9,10 +9,11 @@ public class myHexagon
     private static uint[] indicesOutline = null;
     private static uint[] indicesFill = null;
     private static float[] vertices = null;
-    private static int locationColor = 0;
+    private static int locationColor = 0, locationAngle = 0, locationCenter = 0;
     private static int Width = 0, Height = 0;
     private static float sqrt3_div2 = 0;
     private static float h_div_w = 0;
+    private static float _r, _g, _b, _a, _angle;
 
     public myHexagon(int width, int height)
     {
@@ -59,6 +60,9 @@ public class myHexagon
             vbo = glGenBuffer();
 
             CreateProgram();
+            locationColor  = glGetUniformLocation(program, "myColor");
+            locationAngle  = glGetUniformLocation(program, "myAngle");
+            locationCenter = glGetUniformLocation(program, "myCenter");
 
             glBindVertexArray(vao);
             glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -67,10 +71,6 @@ public class myHexagon
             // glDrawArrays does not need this
             __glGenBuffers();
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-
-            CreateVertices(false);
-
-            locationColor = glGetUniformLocation(program, "myColor");
         }
     }
 
@@ -89,52 +89,121 @@ public class myHexagon
             }
         }
 
-        // Recalc int coordinates into floats
-        float fx = 2.0f * x / (Width) - 1.0f;
-        float fy = 1.0f - 2.0f * y / Height;
+        float fx, fy;
 
-        float fr = 2.0f * r / Height;           // Radius
-        float frx = fr * h_div_w;               // Radius adjusted for x-coordinate
+        if (_angle == 0)
+        {
+            // Recalc int coordinates into floats
+            fx = 2.0f * x / (Width) - 1.0f;
+            fy = 1.0f - 2.0f * y / Height;
 
-        float frx_sqrt = fr * sqrt3_div2;
-        float frx_half = frx * 0.5f;
+            float fr = 2.0f * r / Height;           // Radius
+            float frx = fr * h_div_w;               // Radius adjusted for x-coordinate
 
-        vertices[00] = fx - frx;
-        vertices[01] = fy;
-        vertices[03] = fx - frx_half;
-        vertices[04] = fy + frx_sqrt;
-        vertices[06] = fx + frx_half;
-        vertices[07] = fy + frx_sqrt;
-        vertices[09] = fx + frx;
-        vertices[10] = fy;
-        vertices[12] = fx + frx_half;
-        vertices[13] = fy - frx_sqrt;
-        vertices[15] = fx - frx_half;
-        vertices[16] = fy - frx_sqrt;
+            float frx_sqrt = fr * sqrt3_div2;
+            float frx_half = frx * 0.5f;
+
+            vertices[00] = fx - frx;
+            vertices[01] = fy;
+            vertices[03] = fx - frx_half;
+            vertices[04] = fy + frx_sqrt;
+            vertices[06] = fx + frx_half;
+            vertices[07] = fy + frx_sqrt;
+            vertices[09] = fx + frx;
+            vertices[10] = fy;
+            vertices[12] = fx + frx_half;
+            vertices[13] = fy - frx_sqrt;
+            vertices[15] = fx - frx_half;
+            vertices[16] = fy - frx_sqrt;
+        }
+        else
+        {
+            // Leave coordinates as they are, and recalc them in the shader
+            fx = x;
+            fy = y;
+
+            float fr = r;                           // Radius
+            float frx = fr;                         // Radius adjusted for x-coordinate
+
+            float frx_sqrt = fr * sqrt3_div2;
+            float frx_half = frx * 0.5f;
+
+            vertices[00] = fx - frx;
+            vertices[01] = fy;
+            vertices[03] = fx - frx_half;
+            vertices[04] = fy + frx_sqrt;
+            vertices[06] = fx + frx_half;
+            vertices[07] = fy + frx_sqrt;
+            vertices[09] = fx + frx;
+            vertices[10] = fy;
+            vertices[12] = fx + frx_half;
+            vertices[13] = fy - frx_sqrt;
+            vertices[15] = fx - frx_half;
+            vertices[16] = fy - frx_sqrt;
+        }
 
         CreateVertices(doFill);
+
+        glUseProgram(program);
+        setColor(locationColor, _r, _g, _b, _a);
+        setAngle(locationAngle, _angle);
+
+        // Set the center of rotation
+        if (_angle != 0.0f)
+        {
+            glUniform2f(locationCenter, x, y);
+        }
 
         __draw(doFill);
     }
 
+    // Just remember the color value
     public void SetColor(float r, float g, float b, float a)
     {
-        setColor(locationColor, r, g, b, a);
+        _r = r;
+        _g = g;
+        _b = b;
+        _a = a;
+    }
+
+    private static void setColor(int location, float r, float g, float b, float a)
+    {
+        glUniform4f(location, r, g, b, a);
+    }
+
+    public void SetAngle(float angle)
+    {
+        _angle = angle;
+    }
+
+    private static void setAngle(int location, float angle)
+    {
+        glUniform1f(location, angle);
     }
 
     private static void CreateProgram()
     {
-#if true
+#if false
         var vertex = myOGL.CreateShaderEx(GL_VERTEX_SHADER, "layout (location = 0) in vec3 pos;", main: "gl_Position = vec4(pos, 1.0);");
 #else
-        var vertex = myOGL.CreateShaderEx(GL_VERTEX_SHADER, "layout (location = 0) in vec3 pos;",
-            main: @"
-                    float a = 0.85;
+        var vertex = myOGL.CreateShaderEx(GL_VERTEX_SHADER, "layout (location = 0) in vec3 pos; uniform float myAngle; uniform vec2 myCenter;",
+            main: @"if (myAngle == 0)
+                    {
+                        gl_Position = vec4(pos, 1.0);
+                    }
+                    else
+                    {
+                        float X = pos.x - myCenter.x;
+                        float Y = pos.y - myCenter.y;
 
-                    float X = pos.x;
-                    float Y = pos.y;
+                        gl_Position = vec4(X * cos(myAngle) - Y * sin(myAngle), Y * cos(myAngle) + X * sin(myAngle), pos.z, 1.0);
 
-                    gl_Position = vec4(X * cos(a) - Y * sin(a), Y * cos(a) + X * sin(a), pos.z, 1.0);"
+                        gl_Position.x += myCenter.x;
+                        gl_Position.y += myCenter.y;
+
+                        gl_Position.x = 2.0f * gl_Position.x / (1920+1) - 1.0f;
+                        gl_Position.y = 1.0f - 2.0f * gl_Position.y / 1200;
+                    }"
         );
 #endif
 
@@ -176,10 +245,5 @@ public class myHexagon
 
         glVertexAttribPointer(0, 3, GL_FLOAT, false, 3 * sizeof(float), NULL);
         glEnableVertexAttribArray(0);
-    }
-
-    private static void setColor(int location, float r, float g, float b, float a)
-    {
-        glUniform4f(location, r, g, b, a);
     }
 };

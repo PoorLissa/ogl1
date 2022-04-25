@@ -8,6 +8,7 @@ public class Triangle
     private static uint vao = 0, vbo = 0, program = 0;
     private static float[] vertices = null;
     private static int locationColor = 0;
+    private static float _r, _g, _b, _a;
 
     public Triangle()
     {
@@ -19,13 +20,10 @@ public class Triangle
             vbo = glGenBuffer();
 
             CreateProgram();
+            locationColor = glGetUniformLocation(program, "myColor");
 
             glBindVertexArray(vao);
             glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
-            CreateVertices();
-
-            locationColor = glGetUniformLocation(program, "myColor");
         }
     }
 
@@ -40,15 +38,27 @@ public class Triangle
 
         CreateVertices();
 
+        glUseProgram(program);
+        setColor(locationColor, _r, _g, _b, _a);
+
         // Draw only outline or fill the whole polygon with color
         glPolygonMode(GL_FRONT_AND_BACK, doFill ? GL_FILL : GL_LINE);
 
         glDrawArrays(GL_TRIANGLES, 0, 3);
     }
 
+    // Just remember the color value
     public void SetColor(float r, float g, float b, float a)
     {
-        setColor(locationColor, r, g, b, a);
+        _r = r;
+        _g = g;
+        _b = b;
+        _a = a;
+    }
+
+    private static void setColor(int location, float r, float g, float b, float a)
+    {
+        glUniform4f(location, r, g, b, a);
     }
 
     private static void CreateProgram()
@@ -79,10 +89,5 @@ public class Triangle
 
         glVertexAttribPointer(0, 3, GL_FLOAT, false, 3 * sizeof(float), NULL);
         glEnableVertexAttribArray(0);
-    }
-
-    private static void setColor(int location, float r, float g, float b, float a)
-    {
-        glUniform4f(location, r, g, b, a);
     }
 };

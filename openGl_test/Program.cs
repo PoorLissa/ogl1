@@ -6,6 +6,8 @@ using System;
 // Original source  : https://www.youtube.com/watch?v=LcHCygwIgLo
 // Hello Triangle   : https://learnopengl.com/Getting-started/Hello-Triangle
 // Glfw manual      : https://www.glfw.org/docs/3.3/index.html
+// Read later       : https://www.khronos.org/opengl/wiki/Common_Mistakes
+
 
 class pt
 {
@@ -101,6 +103,7 @@ class Program
         if (true)
         {
             Width = 1920;
+            //Width = 1200;
             Height = 1200;
         }
 
@@ -126,6 +129,7 @@ class Program
             list.Add(obj);
         }
 
+        glViewport(0, 0, Width, Height);
 
         glEnable(GL_BLEND);                                 // Enable blending
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  // Set blending function
@@ -147,6 +151,7 @@ class Program
 
         //Glfw.SwapInterval(111);
 
+        float angle = 0.0f;
 
         while (!Glfw.WindowShouldClose(window))
         {
@@ -160,21 +165,34 @@ class Program
             glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
-            if (n++ % 500 == 0)
-            {
-/*
-                foreach (var item in list)
-                    item.changeColor(rand);*/
-            }
-
             foreach (var item in list)
             {
                 item.Draw(t);
                 item.Move();
             }
 
+            // Rectangle
+            r.SetColor(1, 1, 0, 0.99f);
+            r.SetAngle(angle);
+            r.Draw(100, 100, 100, 100, false);
 
-            //continue;
+            // Line
+            l.SetColor(0, 1, 0, 1);
+            l.Draw(0, Height, Width, 0);
+
+            // Triangle
+            t.SetColor(1.0f, 0.5f, 0.5f, 0.5f);
+            t.Draw(0.0f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f, false);
+
+            // Hexagon
+            h.SetColor(1, 0, 0, 0.85f);
+            h.SetAngle(angle);
+            h.Draw(Width / 2, Height / 2, 100, false);
+
+
+
+            angle += 0.005f;
+            continue;
 
             // Rectangle
             r.SetColor(1, 1, 0, 0.99f);

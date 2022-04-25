@@ -9,8 +9,9 @@ public class myRectangle
     private static uint[] indicesOutline = null;
     private static uint[] indicesFill = null;
     private static float[] vertices = null;
-    private static int locationColor = 0;
+    private static int locationColor = 0, locationAngle = 0, locationCenter = 0;
     private static int Width = 0, Height = 0;
+    private static float _r, _g, _b, _a, _angle;
 
     public myRectangle(int width, int height)
     {
@@ -47,16 +48,15 @@ public class myRectangle
             vbo = glGenBuffer();
 
             CreateProgram();
+            locationColor  = glGetUniformLocation(program, "myColor");
+            locationAngle  = glGetUniformLocation(program, "myAngle");
+            locationCenter = glGetUniformLocation(program, "myCenter");
 
             glBindVertexArray(vao);
             glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
             __glGenBuffers();
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-
-            CreateVertices(false);
-
-            locationColor = glGetUniformLocation(program, "myColor");
         }
     }
 
@@ -75,36 +75,110 @@ public class myRectangle
             }
         }
 
-        // Recalc int coordinates into floats
-        // Shifting Width a bit to eliminate incomplete left bottom angle
-        float fx = 2.0f * x / (Width + 1) - 1.0f;
-        float fy = 1.0f - 2.0f * y / Height;
-        vertices[06] = fx;
-        vertices[09] = fx;
-        vertices[01] = fy;
-        vertices[10] = fy;
+        float fx, fy;
 
-        fx = 2.0f * (x + w) / Width - 1.0f;
-        vertices[0] = fx;
-        vertices[3] = fx;
+        if (_angle == 0)
+        {
+            // Recalc int coordinates into floats
+            fx = 2.0f * x / (Width + 1) - 1.0f;       // Shifting Width a bit to get rid of incomplete left bottom angle
+            fy = 1.0f - 2.0f * y / Height;
+            vertices[06] = fx;
+            vertices[09] = fx;
+            vertices[01] = fy;
+            vertices[10] = fy;
 
-        fy = 1.0f - 2.0f * (y + h) / Height;
-        vertices[4] = fy;
-        vertices[7] = fy;
+            fx = 2.0f * (x + w) / Width - 1.0f;
+            vertices[0] = fx;
+            vertices[3] = fx;
+
+            fy = 1.0f - 2.0f * (y + h) / Height;
+            vertices[4] = fy;
+            vertices[7] = fy;
+        }
+        else
+        {
+            // Leave coordinates as they are, and recalc them in the shader
+            fx = x;
+            fy = y;
+            vertices[06] = fx;
+            vertices[09] = fx;
+            vertices[01] = fy;
+            vertices[10] = fy;
+
+            fx = x + w;
+            vertices[0] = fx;
+            vertices[3] = fx;
+
+            fy = y + h;
+            vertices[4] = fy;
+            vertices[7] = fy;
+        }
 
         CreateVertices(doFill);
+
+        glUseProgram(program);
+        setColor(locationColor, _r, _g, _b, _a);
+        setAngle(locationAngle, _angle);
+
+        // Set the center of rotation
+        if (_angle != 0.0f)
+        {
+            glUniform2f(locationCenter, x + w/2, y + h/2);
+        }
 
         __draw(doFill);
     }
 
+    // Just remember the color value
     public void SetColor(float r, float g, float b, float a)
     {
-        setColor(locationColor, r, g, b, a);
+        _r = r;
+        _g = g;
+        _b = b;
+        _a = a;
+    }
+
+    private static void setColor(int location, float r, float g, float b, float a)
+    {
+        glUniform4f(location, r, g, b, a);
+    }
+
+    public void SetAngle(float angle)
+    {
+        _angle = angle;
+    }
+
+    private static void setAngle(int location, float angle)
+    {
+        glUniform1f(location, angle);
     }
 
     private static void CreateProgram()
     {
+#if false
         var vertex = myOGL.CreateShaderEx(GL_VERTEX_SHADER, "layout (location = 0) in vec3 pos;", main: "gl_Position = vec4(pos, 1.0);");
+#else
+        var vertex = myOGL.CreateShaderEx(GL_VERTEX_SHADER, "layout (location = 0) in vec3 pos; uniform float myAngle; uniform vec2 myCenter;",
+            main: @"if (myAngle == 0)
+                    {
+                        gl_Position = vec4(pos, 1.0);
+                    }
+                    else
+                    {
+                        float X = pos.x - myCenter.x;
+                        float Y = pos.y - myCenter.y;
+
+                        gl_Position = vec4(X * cos(myAngle) - Y * sin(myAngle), Y * cos(myAngle) + X * sin(myAngle), pos.z, 1.0);
+                    
+                        gl_Position.x += myCenter.x;
+                        gl_Position.y += myCenter.y;
+
+                        gl_Position.x = 2.0f * gl_Position.x / (1920+1) - 1.0f;
+                        gl_Position.y = 1.0f - 2.0f * gl_Position.y / 1200;
+                    }"
+        );
+#endif
+
         var fragment = myOGL.CreateShaderEx(GL_FRAGMENT_SHADER, "out vec4 result; uniform vec4 myColor;", main: "result = myColor;");
 
         program = glCreateProgram();
@@ -143,10 +217,5 @@ public class myRectangle
 
         glVertexAttribPointer(0, 3, GL_FLOAT, false, 3 * sizeof(float), NULL);
         glEnableVertexAttribArray(0);
-    }
-
-    private static void setColor(int location, float r, float g, float b, float a)
-    {
-        glUniform4f(location, r, g, b, a);
     }
 };

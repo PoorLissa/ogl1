@@ -9,6 +9,7 @@ class Line
     private static float[] vertices = null;
     private static int locationColor = 0;
     private static int Width = 0, Height = 0;
+    private static float _r, _g, _b, _a;
 
     public Line(int width, int height)
     {
@@ -23,13 +24,10 @@ class Line
             vbo = glGenBuffer();
 
             CreateProgram();
+            locationColor = glGetUniformLocation(program, "myColor");
 
             glBindVertexArray(vao);
             glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
-            CreateVertices();
-
-            locationColor = glGetUniformLocation(program, "myColor");
         }
     }
 
@@ -49,28 +47,26 @@ class Line
 
         CreateVertices();
 
-        glLineWidth(lineWidth);
-
-        glDrawArrays(GL_LINES, 0, 2);
-    }
-
-    public void Draw2(float x1, float y1, float x2, float y2, float lineWidth = 1.0f)
-    {
-        vertices[0] = x1;
-        vertices[1] = y1;
-        vertices[2] = x2;
-        vertices[3] = y2;
-
-        CreateVertices();
+        glUseProgram(program);
+        setColor(locationColor, _r, _g, _b, _a);
 
         glLineWidth(lineWidth);
 
         glDrawArrays(GL_LINES, 0, 2);
     }
 
+    // Just remember the color value
     public void SetColor(float r, float g, float b, float a)
     {
-        setColor(locationColor, r, g, b, a);
+        _r = r;
+        _g = g;
+        _b = b;
+        _a = a;
+    }
+
+    private static void setColor(int location, float r, float g, float b, float a)
+    {
+        glUniform4f(location, r, g, b, a);
     }
 
     private static void CreateProgram()
@@ -99,10 +95,5 @@ class Line
 
         glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * sizeof(float), NULL);
         glEnableVertexAttribArray(0);
-    }
-
-    private static void setColor(int location, float r, float g, float b, float a)
-    {
-        glUniform4f(location, r, g, b, a);
     }
 };
