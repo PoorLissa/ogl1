@@ -91,7 +91,7 @@ public class myHexagon : myPrimitive
 
         if (_angle == 0)
         {
-            // Recalc int coordinates into floats
+            // Recalc screen coordinates into Normalized Device Coordinates (NDC)
             fx = 2.0f * x / (Width) - 1.0f;
             fy = 1.0f - 2.0f * y / Height;
 

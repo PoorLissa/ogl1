@@ -4,8 +4,7 @@ using System;
 
 /*
     - Draws an ellipse
-
-    
+    - For now, actually, only circle. TO be able to draw an ellipse, needs some adjustments
 */
 
 public class myEllipse : myPrimitive
@@ -15,7 +14,6 @@ public class myEllipse : myPrimitive
     private static float[] vertices = null;
     private static int locationColor = 0, locationCenter = 0, locationScrSize = 0, locationRadSq = 0;
     private float lineThickness = 0;
-    private static float lineThicknessDefault = 0.0025f;
 
     // -------------------------------------------------------------------------------------------------------------------
 
@@ -25,6 +23,8 @@ public class myEllipse : myPrimitive
         {
             fixed (uint* e = &ebo) { glGenBuffers(1, e); }
         }
+
+        // ---------------------------------------------------------------------------------------
 
         if (vertices == null)
         {
@@ -56,7 +56,7 @@ public class myEllipse : myPrimitive
         }
 
         // Default line thickness
-        lineThickness = lineThicknessDefault;
+        resetLineThickness();
     }
 
     // -------------------------------------------------------------------------------------------------------------------
@@ -64,13 +64,13 @@ public class myEllipse : myPrimitive
     // Change the thickness of the line (used only in non-filling mode)
     public void setLineThickness(float val)
     {
-        lineThickness = val;
+        lineThickness = 2.0f * (val + 1) / Width;
     }
 
     // -------------------------------------------------------------------------------------------------------------------
 
     // Get current line thickness
-    public float fetLineThickness()
+    public float getLineThickness()
     {
         return lineThickness;
     }
@@ -80,7 +80,7 @@ public class myEllipse : myPrimitive
     // Reset the thickness of the line to its default value
     public void resetLineThickness()
     {
-        lineThickness = lineThicknessDefault;
+        setLineThickness(1.0f);
     }
 
     // -------------------------------------------------------------------------------------------------------------------

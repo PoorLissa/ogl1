@@ -73,6 +73,34 @@ class myObj
     }
 }
 
+class myObj2
+{
+    float x, y, r, time, dt;
+
+    public myObj2(int w, int h, Random rand)
+    {
+        x = rand.Next(w);
+        y = rand.Next(h);
+        r = rand.Next(111);
+        time = 0;
+        dt = 0.0001f * (rand.Next(100)+1);
+    }
+
+    public void Move()
+    {
+        r += (float)(10 * Math.Sin(time));
+        time += dt;
+    }
+
+    public void Draw(myEllipse el)
+    {
+        el.SetColor(0.9f, 033f, 0.66f, 0.33f);
+        //el.setLineThickness(3);
+        el.resetLineThickness();
+        el.Draw((int)(x-r), (int)(y-r), (int)(r+r), (int)(r+r), false);
+    }
+};
+
 
 
 class Program
@@ -128,13 +156,19 @@ class Program
         var h = new myHexagon();
         h.SetColor(1, 0, 0, 0.33f);
 
-        var list = new System.Collections.Generic.List<myObj>();
-
+        var list1 = new System.Collections.Generic.List<myObj>();
         for (int i = 0; i < 1111; i++)
         {
             var obj = new myObj(rand);
             obj.changeColor(rand);
-            list.Add(obj);
+            list1.Add(obj);
+        }
+
+        var list2 = new System.Collections.Generic.List<myObj2>();
+        for (int i = 0; i < 333; i++)
+        {
+            var obj = new myObj2(Width, Height, rand);
+            list2.Add(obj);
         }
 
 
@@ -174,9 +208,15 @@ class Program
             glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
-            foreach (var item in list)
+            foreach (var item in list1)
             {
                 item.Draw(t);
+                item.Move();
+            }
+
+            foreach (var item in list2)
+            {
+                item.Draw(e);
                 item.Move();
             }
 
@@ -195,6 +235,7 @@ class Program
 
             // Ellipse
             int aaa = (int)(575 * Math.Sin(angle1 / 10));
+            e.setLineThickness(33);
             e.Draw(Width / 2 - 111 - aaa, Height / 2 - 111 - aaa, 222 + 2*aaa, 222 + 2*aaa, false);
 
             // Rectangle
@@ -205,8 +246,9 @@ class Program
             l.Draw(0, Height, Width, 0);
 
             // Triangle
+            t.SetAngle((angle1+angle2)/6);
             t.SetColor(0.0f, 0.9f, 0.9f, 0.75f);
-            t.Draw(0.0f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f, false);
+            t.Draw(Width/3, Height - 200, Width/2, 200, 2*Width/3, Height - 200, false);
 
             // Hexagon
             h.SetAngle(angle2);

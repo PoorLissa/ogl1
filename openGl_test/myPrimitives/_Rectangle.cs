@@ -76,7 +76,7 @@ public class myRectangle : myPrimitive
 
         if (_angle == 0)
         {
-            // Recalc int coordinates into floats
+            // Recalc screen coordinates into Normalized Device Coordinates (NDC)
             fx = 2.0f * x / (Width + 1) - 1.0f;       // Shifting Width a bit to get rid of incomplete left bottom angle
             fy = 1.0f - 2.0f * y / Height;
             vertices[06] = fx;
@@ -139,7 +139,8 @@ public class myRectangle : myPrimitive
 
     private static void CreateProgram()
     {
-        var vertex = myOGL.CreateShaderEx(GL_VERTEX_SHADER, "layout (location = 0) in vec3 pos; uniform float myAngle; uniform vec2 myCenter; uniform ivec2 myScrSize;",
+        var vertex = myOGL.CreateShaderEx(GL_VERTEX_SHADER,
+            "layout (location = 0) in vec3 pos; uniform float myAngle; uniform vec2 myCenter; uniform ivec2 myScrSize;",
             main: @"if (myAngle == 0)
                     {
                         gl_Position = vec4(pos, 1.0);
