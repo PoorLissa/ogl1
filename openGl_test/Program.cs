@@ -8,6 +8,8 @@ using System;
 // Glfw manual          : https://www.glfw.org/docs/3.3/index.html
 // Read later           : https://www.khronos.org/opengl/wiki/Common_Mistakes
 // GLSL optimization    : https://stackoverflow.com/questions/22379978/are-glsl-compilers-well-optimized
+// GLFW Users Guide     : https://www.glfw.org/GLFWUsersGuide277.pdf
+
 
 class pt
 {
