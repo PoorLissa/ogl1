@@ -113,11 +113,17 @@ class Program
 
         var t = new Triangle();
 
+        var e = new myEllipse();
+        e.SetColor(1.0f, 0.25f, 0.25f, 1);
+
         var l = new Line();
         l.SetColor(0, 1, 0, 1);
 
         var r = new myRectangle();
         r.SetColor(1, 1, 0, 0.33f);
+
+        var r2 = new myRectangle();
+        r2.SetColor(1, 0, 0, 0.33f);
 
         var h = new myHexagon();
         h.SetColor(1, 0, 0, 0.33f);
@@ -153,7 +159,8 @@ class Program
 
         //Glfw.SwapInterval(111);
 
-        float angle = 0.0f;
+        float angle1 = 0.0f;
+        float angle2 = 0.0f;
 
         while (!Glfw.WindowShouldClose(window))
         {
@@ -173,9 +180,15 @@ class Program
                 item.Move();
             }
 
-            // Rectangle
-            r.SetAngle(angle);
+            // Ellipse
+            e.Draw(Width / 2 - 222, Height / 2 - 222, 444, 444, true);
+
+            r.SetAngle(0);
             r.Draw(Width / 2 - 222, Height / 2 - 222, 444, 444, true);
+
+            // Rectangle
+            r.SetAngle(angle1);
+            r.Draw(Width / 4 - 222, Height / 4 - 222, 444, 444, true);
 
             // Line
             l.Draw(0, Height, Width, 0);
@@ -185,10 +198,11 @@ class Program
             t.Draw(0.0f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f, false);
 
             // Hexagon
-            h.SetAngle(angle);
-            h.Draw(Width / 2, Height / 2, 100, true);
+            h.SetAngle(angle2);
+            h.Draw(Width / 4, Height / 4, 100 + (int)(75 * Math.Sin(angle1/10)), true);
 
-            angle += 0.0025f;
+            angle1 += 0.125f;
+            angle2 += 0.05f;
             continue;
 
             // Rectangle

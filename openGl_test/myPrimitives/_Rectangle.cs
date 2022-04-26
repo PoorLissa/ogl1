@@ -163,7 +163,9 @@ public class myRectangle : myPrimitive
         );
 #endif
 
-        var fragment = myOGL.CreateShaderEx(GL_FRAGMENT_SHADER, "out vec4 result; uniform vec4 myColor;", main: "result = myColor;");
+        var fragment = myOGL.CreateShaderEx(GL_FRAGMENT_SHADER, "in vec2 zzz; out vec4 result; uniform vec4 myColor;",
+                main: "result = myColor;"
+        );
 
         program = glCreateProgram();
         glAttachShader(program, vertex);
