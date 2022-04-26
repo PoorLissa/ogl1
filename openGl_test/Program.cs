@@ -181,10 +181,10 @@ class Program
             }
 
             // Ellipse
-            e.Draw(Width / 2 - 222, Height / 2 - 222, 444, 444, true);
+            e.Draw(Width / 2 - 111, Height / 2 - 111, 222, 222, true);
 
             r.SetAngle(0);
-            r.Draw(Width / 2 - 222, Height / 2 - 222, 444, 444, true);
+            r.Draw(Width / 2 - 111, Height / 2 - 111, 222, 222, true);
 
             // Rectangle
             r.SetAngle(angle1);

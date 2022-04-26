@@ -54,7 +54,7 @@ public class myEllipse : myPrimitive
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
         }
 
-        float fx, fy;
+        float fx, fy, rad = w / 2;
 
         // Recalc int coordinates into floats
         fx = 2.0f * x / (Width) - 1.0f;
@@ -64,6 +64,8 @@ public class myEllipse : myPrimitive
         vertices[01] = fy;
         vertices[10] = fy;
 
+        // X: -0.1156 ... +0.1156
+
         fx = 2.0f * (x + w) / Width - 1.0f;
         vertices[0] = fx;
         vertices[3] = fx;
@@ -71,6 +73,25 @@ public class myEllipse : myPrimitive
         fy = 1.0f - 2.0f * (y + h) / Height;
         vertices[4] = fy;
         vertices[7] = fy;
+        // ------------------ clean it later *********************************
+
+        {
+            // Leave coordinates as they are, and recalc them in the shader
+            fx = x;
+            fy = y;
+            vertices[06] = fx;
+            vertices[09] = fx;
+            vertices[01] = fy;
+            vertices[10] = fy;
+
+            fx = x + w;
+            vertices[0] = fx;
+            vertices[3] = fx;
+
+            fy = y + h;
+            vertices[4] = fy;
+            vertices[7] = fy;
+        }
 
         CreateVertices();
 
@@ -80,29 +101,37 @@ public class myEllipse : myPrimitive
         glUniform2f(locationCenter, x + w/2, y + h/2);
         updUniformScreenSize(locationScrSize, Width, Height);
 
-        int lalala = glGetUniformLocation(program, "lalala");
+        int RadSq = glGetUniformLocation(program, "RadSq");
 
-        float zxc1 = 2.0f * (w/2) / Width;
+        float zxc1 = (float)w / (float)Width;
+        float zxc2 = (float)h / (float)Height;
 
-        float zxc3 = (float)(Math.Sqrt(zxc1));
-
-        //glUniform2f(lalala, 0.0125f, h/2);
-        glUniform2f(lalala, zxc1, h/2);
+        glUniform2f(RadSq, zxc1 * zxc1, zxc2 * zxc2);
 
         __draw();
     }
 
     private static void CreateProgram()
     {
-        var vertex = myOGL.CreateShaderEx(GL_VERTEX_SHADER, "layout (location = 0) in vec3 pos; out vec2 zzz; uniform vec2 myCenter; uniform ivec2 myScrSize;",
-            main: @"zzz = vec2(pos.x, myScrSize.y * pos.y / myScrSize.x);
-                    gl_Position = vec4(pos, 1.0);"
+        var vertex = myOGL.CreateShaderEx(GL_VERTEX_SHADER, "layout (location = 0) in vec3 pos; out vec4 zzz; uniform vec2 myCenter; uniform ivec2 myScrSize;",
+            main: @"gl_Position = vec4(pos, 1.0);
+
+                    gl_Position.x = 2.0f * gl_Position.x / (myScrSize.x+1) - 1.0f;
+                    gl_Position.y = 1.0f - 2.0f * gl_Position.y / myScrSize.y;
+
+                    zzz = vec4(gl_Position.x,
+                               myScrSize.y * gl_Position.y / myScrSize.x,
+                               2.0f * myCenter.x / (myScrSize.x+1) - 1.0f,
+                               1.0f - 2.0f * myCenter.y / myScrSize.y);"
         );
 
-        var fragment = myOGL.CreateShaderEx(GL_FRAGMENT_SHADER, "in vec2 zzz; out vec4 result; uniform vec4 myColor; uniform vec2 lalala;",
+        // still works wrong when moved along y axis
+        var fragment = myOGL.CreateShaderEx(GL_FRAGMENT_SHADER, "in vec4 zzz; out vec4 result; uniform vec4 myColor; uniform vec2 RadSq;",
                 main: @"
-                        float dist = zzz.x * zzz.x + zzz.y * zzz.y;
-                        if(dist < 0.0125)
+
+                        float dist = (zzz.x - zzz.z) * (zzz.x - zzz.z) + (zzz.y - zzz.w) * (zzz.y - zzz.w);
+
+                        if (dist < RadSq.x)
                         {
                             result = myColor;
                         }
