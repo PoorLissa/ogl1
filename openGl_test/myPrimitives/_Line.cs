@@ -29,7 +29,7 @@ class Line : myPrimitive
 
     public void Draw(float x1, float y1, float x2, float y2, float lineWidth = 1.0f)
     {
-        // Recalc int coordinates into floats
+        // Recalc screen coordinates into Normalized Device Coordinates (NDC)
         float fx = 2.0f * x1 / (Width) - 1.0f;
         float fy = 1.0f - 2.0f * y1 / Height;
 

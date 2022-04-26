@@ -2,6 +2,11 @@
 using static OpenGL.GL;
 using System;
 
+/*
+    - Draws an ellipse
+
+    
+*/
 
 public class myEllipse : myPrimitive
 {
@@ -9,20 +14,24 @@ public class myEllipse : myPrimitive
     private static uint[] indicesFill = null;
     private static float[] vertices = null;
     private static int locationColor = 0, locationCenter = 0, locationScrSize = 0, locationRadSq = 0;
+    private float lineThickness = 0;
+    private static float lineThicknessDefault = 0.0025f;
+
+    // -------------------------------------------------------------------------------------------------------------------
 
     public myEllipse()
     {
         static unsafe void __glGenBuffers()
         {
-            fixed (uint* e = &ebo)
-            {
-                glGenBuffers(1, e);
-            }
+            fixed (uint* e = &ebo) { glGenBuffers(1, e); }
         }
 
         if (vertices == null)
         {
             vertices = new float[12];
+
+            for (int i = 0; i < 12; i++)
+                vertices[i] = 0.0f;
 
             indicesFill = new uint[]
             {
@@ -45,7 +54,36 @@ public class myEllipse : myPrimitive
             __glGenBuffers();
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
         }
+
+        // Default line thickness
+        lineThickness = lineThicknessDefault;
     }
+
+    // -------------------------------------------------------------------------------------------------------------------
+
+    // Change the thickness of the line (used only in non-filling mode)
+    public void setLineThickness(float val)
+    {
+        lineThickness = val;
+    }
+
+    // -------------------------------------------------------------------------------------------------------------------
+
+    // Get current line thickness
+    public float fetLineThickness()
+    {
+        return lineThickness;
+    }
+
+    // -------------------------------------------------------------------------------------------------------------------
+
+    // Reset the thickness of the line to its default value
+    public void resetLineThickness()
+    {
+        lineThickness = lineThicknessDefault;
+    }
+
+    // -------------------------------------------------------------------------------------------------------------------
 
     public void Draw(int x, int y, int w, int h, bool doFill = false)
     {
@@ -83,13 +121,26 @@ public class myEllipse : myPrimitive
         glUniform2f(locationCenter, x + w/2, y + h/2);
         updUniformScreenSize(locationScrSize, Width, Height);
 
-        glUniform2f(locationRadSq, radx * radx, 0);
+        float radSquared = radx * radx;
+
+        if (doFill)
+        {
+            glUniform2f(locationRadSq, radSquared, 0);
+        }
+        else
+        {
+            // [lineThickness] needs to be tested on different resolutions. Probably need some additional adjustments.
+            glUniform2f(locationRadSq, radSquared, radSquared - radx * lineThickness);
+        }
 
         __draw();
     }
 
+    // -------------------------------------------------------------------------------------------------------------------
+
     private static void CreateProgram()
     {
+        // Multiply either part of zzz in this shader by [float > 1.0f] to get an ellipse, not circle
         var vertex = myOGL.CreateShaderEx(GL_VERTEX_SHADER,
             "layout (location = 0) in vec3 pos; out vec2 zzz; uniform vec2 myCenter; uniform ivec2 myScrSize;",
                 main: @"gl_Position.x = 2.0f * pos.x / myScrSize.x - 1.0f;
@@ -100,12 +151,25 @@ public class myEllipse : myPrimitive
 
         var fragment = myOGL.CreateShaderEx(GL_FRAGMENT_SHADER,
             "in vec2 zzz; out vec4 result; uniform vec4 myColor; uniform vec2 RadSq;",
-                main: @"if (zzz.x * zzz.x + zzz.y * zzz.y < RadSq.x)
+                main: @"float xySqd = zzz.x * zzz.x + zzz.y * zzz.y;
+                        if (xySqd <= RadSq.x)
                         {
-                            result = myColor;
-                            return;
+                            if (RadSq.y == 0.0)
+                            {
+                                result = myColor;
+                            }
+                            else
+                            {
+                                if (xySqd > RadSq.y)
+                                {
+                                    result = myColor;
+                                }
+                            }
                         }
-                        result = vec4(0, 0, 0, 0);"
+                        else
+                        {
+                            result = vec4(0, 0, 0, 0);
+                        }"
         );
 
         program = glCreateProgram();
@@ -119,6 +183,8 @@ public class myEllipse : myPrimitive
 
         glUseProgram(program);
     }
+
+    // -------------------------------------------------------------------------------------------------------------------
 
     private static unsafe void CreateVertices()
     {
@@ -135,4 +201,6 @@ public class myEllipse : myPrimitive
         glVertexAttribPointer(0, 3, GL_FLOAT, false, 3 * sizeof(float), NULL);
         glEnableVertexAttribArray(0);
     }
+
+    // -------------------------------------------------------------------------------------------------------------------
 };

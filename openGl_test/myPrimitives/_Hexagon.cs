@@ -30,7 +30,8 @@ public class myHexagon : myPrimitive
             h_div_w = (float)Height / (float)Width;
 
             vertices = new float[18];
-            for(int i = 0; i < 18; i++)
+
+            for (int i = 0; i < 18; i++)
                 vertices[i] = 0.0f;
 
             indicesOutline = new uint[]

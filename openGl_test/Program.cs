@@ -114,7 +114,7 @@ class Program
         var t = new Triangle();
 
         var e = new myEllipse();
-        e.SetColor(1.0f, 0.25f, 0.25f, 1);
+        e.SetColor(1.0f, 0.25f, 0.25f, 0.5f);
 
         var l = new Line();
         l.SetColor(0, 1, 0, 1);
@@ -180,11 +180,22 @@ class Program
                 item.Move();
             }
 
-            // Ellipse
-            e.Draw(Width / 3 - 111, Height / 3 - 111, 222, 222, true);
+#if false
+            for (int i = 0; i < 11; i++)
+            {
+                int x = rand.Next(Width);
+                int y = rand.Next(Height);
 
-            r.SetAngle(0);
-            r.Draw(Width / 2 - 111, Height / 2 - 111, 222, 222, true);
+                int rr = rand.Next(111);
+                e.Draw(x - rr, y - rr, 2 * rr, 2 * rr, false);
+                e.Draw(x - rr, y - rr, 2 * rr, 2 * rr, true);
+            }
+            System.Threading.Thread.Sleep(333);
+#endif
+
+            // Ellipse
+            int aaa = (int)(575 * Math.Sin(angle1 / 10));
+            e.Draw(Width / 2 - 111 - aaa, Height / 2 - 111 - aaa, 222 + 2*aaa, 222 + 2*aaa, false);
 
             // Rectangle
             r.SetAngle(angle1);

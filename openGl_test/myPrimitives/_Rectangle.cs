@@ -139,9 +139,6 @@ public class myRectangle : myPrimitive
 
     private static void CreateProgram()
     {
-#if false
-        var vertex = myOGL.CreateShaderEx(GL_VERTEX_SHADER, "layout (location = 0) in vec3 pos;", main: "gl_Position = vec4(pos, 1.0);");
-#else
         var vertex = myOGL.CreateShaderEx(GL_VERTEX_SHADER, "layout (location = 0) in vec3 pos; uniform float myAngle; uniform vec2 myCenter; uniform ivec2 myScrSize;",
             main: @"if (myAngle == 0)
                     {
@@ -161,7 +158,6 @@ public class myRectangle : myPrimitive
                         gl_Position.y = 1.0f - 2.0f * gl_Position.y / myScrSize.y;
                     }"
         );
-#endif
 
         var fragment = myOGL.CreateShaderEx(GL_FRAGMENT_SHADER, "in vec2 zzz; out vec4 result; uniform vec4 myColor;",
                 main: "result = myColor;"
