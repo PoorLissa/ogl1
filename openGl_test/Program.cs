@@ -3,11 +3,11 @@ using static OpenGL.GL;
 using System;
 
 
-// Original source  : https://www.youtube.com/watch?v=LcHCygwIgLo
-// Hello Triangle   : https://learnopengl.com/Getting-started/Hello-Triangle
-// Glfw manual      : https://www.glfw.org/docs/3.3/index.html
-// Read later       : https://www.khronos.org/opengl/wiki/Common_Mistakes
-
+// Original source      : https://www.youtube.com/watch?v=LcHCygwIgLo
+// Hello Triangle       : https://learnopengl.com/Getting-started/Hello-Triangle
+// Glfw manual          : https://www.glfw.org/docs/3.3/index.html
+// Read later           : https://www.khronos.org/opengl/wiki/Common_Mistakes
+// GLSL optimization    : https://stackoverflow.com/questions/22379978/are-glsl-compilers-well-optimized
 
 class pt
 {
@@ -100,7 +100,7 @@ class Program
         myOGL.PrepareContext();
 
         // Create a window and shader program
-        if (false)
+        if (true)
         {
             Width = 1920;
             Height = 1200;
@@ -181,7 +181,7 @@ class Program
             }
 
             // Ellipse
-            e.Draw(Width / 2 - 111, Height / 2 - 111, 222, 222, true);
+            e.Draw(Width / 3 - 111, Height / 3 - 111, 222, 222, true);
 
             r.SetAngle(0);
             r.Draw(Width / 2 - 111, Height / 2 - 111, 222, 222, true);
