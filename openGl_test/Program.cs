@@ -195,6 +195,8 @@ class Program
 
         //Glfw.SwapInterval(111);
 
+        // try loading from bitmaps: https://stackoverflow.com/questions/11645368/opengl-c-sharp-opentk-load-and-draw-image-functions-not-working
+
         float angle1 = 0.0f;
         float angle2 = 0.0f;
 
